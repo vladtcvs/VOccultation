@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import cv2
 
-import drift_profile
+import voccultation.drift_profile as drift_profile
 
 import matplotlib
 matplotlib.use("Agg")

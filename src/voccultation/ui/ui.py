@@ -13,6 +13,7 @@
 #
 
 import wx
+import wx.adv
 import numpy as np
 from PIL import Image
 
@@ -27,12 +28,19 @@ class DriftWindow(wx.Frame):
         self.context = context
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         menuBar = wx.MenuBar()
-        menu = wx.Menu()
-        m_open = menu.Append(wx.ID_OPEN, "Open\tCtrl-O", "Open tracks image")
-        m_exit = menu.Append(wx.ID_EXIT, "Exit\tCtrl-Q", "Close window and exit program")
+
+        fileMenu = wx.Menu()
+        m_open = fileMenu.Append(wx.ID_OPEN, "Open\tCtrl-O", "Open tracks image")
+        m_exit = fileMenu.Append(wx.ID_EXIT, "Exit\tCtrl-Q", "Close window and exit program")
         self.Bind(wx.EVT_MENU, self.OnOpenImage, m_open)
         self.Bind(wx.EVT_MENU, self.OnClose, m_exit)
-        menuBar.Append(menu, "&File")
+        menuBar.Append(fileMenu, "&File")
+
+        helpMenu = wx.Menu()
+        m_about = helpMenu.Append(wx.ID_ABOUT, "About", "About")
+        self.Bind(wx.EVT_MENU, self.OnAbout, m_about)
+        menuBar.Append(helpMenu, "&Help")
+
         self.SetMenuBar(menuBar)
 
         panel = wx.Panel(self)
@@ -51,6 +59,16 @@ class DriftWindow(wx.Frame):
         sizer.Add(notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
         self.Layout()
+
+    def OnAbout(self, event):
+        aboutInfo = wx.adv.AboutDialogInfo()
+        aboutInfo.SetName("VOccultation")
+        aboutInfo.SetVersion("Version: 0.2")
+        aboutInfo.SetDescription("Asteroid occultation processing")
+        aboutInfo.SetCopyright("Vladislav Tsendrovskii(C) 2026")
+        aboutInfo.SetLicense("GNU GPL v3")
+        aboutInfo.SetWebSite("https://github.com/vladtcvs/VOccultation")
+        wx.adv.AboutBox(aboutInfo)
 
     def OnOpenImage(self, event):
         with wx.FileDialog(self, "Open track file", wildcard="Image (*.png;*.jpg)|*.png;*.jpg",

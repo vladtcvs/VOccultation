@@ -61,8 +61,8 @@ class DetectTracksPanel(wx.Panel, IObserver):
     def navigate(self, dx, dy):
         x, y = self.occultation_track_position()
         x, y = (x + dx, y + dy)
-        self.context.occultation_track_pos = (y, x)
-        self.context.build_occultation_track(x, y)
+        self.context.specify_occultation_track(x, y)
+        self.context.display_tracks()
 
     def init_occultation_track_position(self):
         w = self.context.gray.shape[1]
@@ -83,7 +83,8 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.context.build_mean_reference_track()
         self.init_occultation_track_position()
         x, y = self.occultation_track_position()
-        self.context.build_occultation_track(x, y)
+        self.context.specify_occultation_track(x, y)
+        self.context.build_occultation_track()
 
     def UpdateImage(self):
         if self.context.gray is None:

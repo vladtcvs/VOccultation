@@ -44,21 +44,28 @@ class DriftWindow(wx.Frame):
         self.SetMenuBar(menuBar)
 
         panel = wx.Panel(self)
-        notebook = wx.Notebook(panel)
+        self.notebook = wx.Notebook(panel)
 
-        self.detectTracksPanel = DetectTracksPanel(notebook, self.context)
-        notebook.AddPage(self.detectTracksPanel, "Detect tracks")
+        self.detectTracksPanel = DetectTracksPanel(self.notebook, self.context)
+        self.notebook.AddPage(self.detectTracksPanel, "Detect tracks")
 
-        self.referenceTrackPanel = ReferenceTrackPanel(notebook, self.context)
-        notebook.AddPage(self.referenceTrackPanel, "Reference track")
+        self.referenceTrackPanel = ReferenceTrackPanel(self.notebook, self.context)
+        self.notebook.AddPage(self.referenceTrackPanel, "Reference track")
 
-        self.occultationTrackPanel = OccultationTrackPanel(notebook, self.context)
-        notebook.AddPage(self.occultationTrackPanel, "Occultation track")
+        self.occultationTrackPanel = OccultationTrackPanel(self.notebook, self.context)
+        self.notebook.AddPage(self.occultationTrackPanel, "Occultation track")
+
+        self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.NotebookChanged)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(notebook, 1, wx.ALL|wx.EXPAND, 5)
+        sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
         self.Layout()
+
+    def NotebookChanged(self, event):
+        page = self.notebook.GetSelection()
+        if page == 2:
+            self.occultationTrackPanel.AnalyzeOccultation(None)
 
     def OnAbout(self, event):
         aboutInfo = wx.adv.AboutDialogInfo()

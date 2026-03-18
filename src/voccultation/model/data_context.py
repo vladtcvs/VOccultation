@@ -112,45 +112,8 @@ class DriftContext:
         self.occultation_half_w = half_w
         self.notify_observers()
 
-    def _draw_tracks(self):
+    def display_tracks(self):
         self.rgb = cv2.cvtColor(self.gray.astype(np.uint8), cv2.COLOR_GRAY2RGB)
-
-        # mean track draw
-        if self.mean_reference_track is not None:
-            self.mean_reference_image = self.mean_reference_track.draw((255,0,0), 0.5)
-        else:
-            self.mean_reference_image = None
-
-        # mean track slices
-        if self.mean_reference_slices is not None:
-            self.mean_reference_slices_image = self.mean_reference_slices.draw()
-        else:
-            self.mean_reference_slices_image = None
-
-        # build reference profile plot
-        if self.mean_reference_profile is not None:
-            self.mean_reference_plot = self.mean_reference_profile.plot_profile(640, 480)
-        else:
-            self.mean_reference_plot = None
-
-        # occultation track draw
-        if self.occultation_track is not None:
-            self.occultation_image = self.occultation_track.draw((0,200,0),0.5)
-        else:
-            self.occultation_image = None
-
-        # occultation slices
-        if self.occultation_slices is not None:
-            self.occultation_slices_image = self.occultation_slices.draw()
-        else:
-            self.occultation_slices_image = None
-
-        # build occultation profile plot
-        if self.occultation_profile is not None:
-            self.occultation_plot = self.occultation_profile.plot_profile(640, 480)
-        else:
-            self.occultation_plot = None
-
         # draw reference track line on each of reference tracks on original image
         for reference_track_rect in self.reference_track_rects:
                 # draw track
@@ -192,6 +155,46 @@ class DriftContext:
                                     (self.occultation_track_rect.right+self.occultation_margin,
                                      self.occultation_track_rect.bottom+self.occultation_margin),
                                     color=(0,200,0), thickness=1)
+        self.notify_observers()
+
+    def _draw_tracks(self):
+        # mean track draw
+        if self.mean_reference_track is not None:
+            self.mean_reference_image = self.mean_reference_track.draw((255,0,0), 0.5)
+        else:
+            self.mean_reference_image = None
+
+        # mean track slices
+        if self.mean_reference_slices is not None:
+            self.mean_reference_slices_image = self.mean_reference_slices.draw()
+        else:
+            self.mean_reference_slices_image = None
+
+        # build reference profile plot
+        if self.mean_reference_profile is not None:
+            self.mean_reference_plot = self.mean_reference_profile.plot_profile(640, 480)
+        else:
+            self.mean_reference_plot = None
+
+        # occultation track draw
+        if self.occultation_track is not None:
+            self.occultation_image = self.occultation_track.draw((0,200,0),0.5)
+        else:
+            self.occultation_image = None
+
+        # occultation slices
+        if self.occultation_slices is not None:
+            self.occultation_slices_image = self.occultation_slices.draw()
+        else:
+            self.occultation_slices_image = None
+
+        # build occultation profile plot
+        if self.occultation_profile is not None:
+            self.occultation_plot = self.occultation_profile.plot_profile(640, 480)
+        else:
+            self.occultation_plot = None
+
+        self.display_tracks()
 
     def detect_tracks(self):
         self.reference_track_rects = drift_detect.detect_reference_tracks(self.gray, 9, [2, 1.2])
@@ -254,17 +257,21 @@ class DriftContext:
         self._draw_tracks()
         self.notify_observers()
 
-    def build_occultation_track(self, x0 : int, y0 : int):
+    def specify_occultation_track(self, x0 : int, y0 : int):
+        if self.mean_reference_track is None:
+            return
+        self.occultation_track_pos = (y0, x0)
+        w = self.mean_reference_track.gray.shape[1]
+        h = self.mean_reference_track.gray.shape[0]
+        self.occultation_track_rect = DriftTrackRect(x0, x0 + w, y0, y0 + h)
+
+    def build_occultation_track(self):
         if self.mean_reference_track is None:
             self.occultation_track_rect = None
             self.occultation_track = None
             self.occultation_slices = None
             self.occultation_profile = None
             return
-
-        w = self.mean_reference_track.gray.shape[1]
-        h = self.mean_reference_track.gray.shape[0]
-        self.occultation_track_rect = DriftTrackRect(x0, x0 + w, y0, y0 + h)
 
         occultation_track_area, _ = self.occultation_track_rect.extract_track(self.gray, self.occultation_margin)
         self.occultation_track = DriftTrack(occultation_track_area,

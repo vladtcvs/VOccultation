@@ -94,13 +94,12 @@ class OccultationTrackPanel(wx.Panel):
     def navigate(self, dx, dy):
         x = self.context.occultation_track_pos[1] + dx
         y = self.context.occultation_track_pos[0] + dy
-        self.context.build_occultation_track(x, y)
+        self.context.specify_occultation_track(x, y)
+        self.context.build_occultation_track()
         self.context.occultation_track_pos = (y, x)
 
     def AnalyzeOccultation(self, event):
-        x = self.context.occultation_track_pos[1]
-        y = self.context.occultation_track_pos[0]
-        self.context.build_occultation_track(x, y)
+        self.context.build_occultation_track()
 
     def UpdateImage(self):
         if self.context.occultation_image is not None:

@@ -82,6 +82,11 @@ class DriftContext:
         self.mean_reference_image : np.ndarray = None
         self.occultation_image : np.ndarray = None
 
+        # ----------- slice images ---------------------
+
+        self.mean_reference_slices_image : np.ndarray = None
+        self.occultation_slices_image : np.ndarray = None
+
         # ---------- plots -----------------------------
 
         self.mean_reference_plot : np.ndarray = None
@@ -116,6 +121,12 @@ class DriftContext:
         else:
             self.mean_reference_image = None
 
+        # mean track slices
+        if self.mean_reference_slices is not None:
+            self.mean_reference_slices_image = self.mean_reference_slices.draw()
+        else:
+            self.mean_reference_slices_image = None
+
         # build reference profile plot
         if self.mean_reference_profile is not None:
             self.mean_reference_plot = self.mean_reference_profile.plot_profile(640, 480)
@@ -127,6 +138,12 @@ class DriftContext:
             self.occultation_image = self.occultation_track.draw((0,200,0),0.5)
         else:
             self.occultation_image = None
+
+        # occultation slices
+        if self.occultation_slices is not None:
+            self.occultation_slices_image = self.occultation_slices.draw()
+        else:
+            self.occultation_slices_image = None
 
         # build occultation profile plot
         if self.occultation_profile is not None:

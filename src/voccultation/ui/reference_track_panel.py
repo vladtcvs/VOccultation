@@ -37,8 +37,8 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         track_sizer.Add(self.ref_track_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
         linear_track_img = wx.Image(480, 40)
-        self.linear_ref_track_image_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(linear_track_img))
-        track_sizer.Add(self.linear_ref_track_image_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
+        self.ref_track_slices_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(linear_track_img))
+        track_sizer.Add(self.ref_track_slices_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
         # track plot panel
         plot_box = wx.StaticBox(self, wx.ID_ANY, label='Plot')
@@ -107,6 +107,15 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
             self.ref_track_ctrl.SetBitmap(gray_bitmap)
+            self.ref_track_ctrl.Refresh()
+
+        if self.context.mean_reference_slices_image is not None:
+            height, width = self.context.mean_reference_slices_image.shape[:2]
+            data = self.context.mean_reference_slices_image.tobytes()
+            image = wx.Image(width, height)
+            image.SetData(data)
+            gray_bitmap = image.ConvertToBitmap()
+            self.ref_track_slices_ctrl.SetBitmap(gray_bitmap)
             self.ref_track_ctrl.Refresh()
 
         if self.context.mean_reference_plot is not None:

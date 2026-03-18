@@ -38,8 +38,8 @@ class OccultationTrackPanel(wx.Panel):
         track_sizer.Add(self.track_image_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
         linear_track_img = wx.Image(480, 40)
-        self.linear_track_image_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(linear_track_img))
-        track_sizer.Add(self.linear_track_image_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
+        self.track_slices_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(linear_track_img))
+        track_sizer.Add(self.track_slices_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
         # track plot panel
         plot_box = wx.StaticBox(self, wx.ID_ANY, label='Plot')
@@ -112,8 +112,14 @@ class OccultationTrackPanel(wx.Panel):
             self.track_image_ctrl.SetBitmap(gray_bitmap)
             self.track_image_ctrl.Refresh()
 
-        #if self.context.occ_linear_track_rgb is not None:
-        #    pass
+        if self.context.occultation_slices_image is not None:
+            height, width = self.context.occultation_slices_image.shape[:2]
+            data = self.context.occultation_slices_image.tobytes()
+            image = wx.Image(width, height)
+            image.SetData(data)
+            gray_bitmap = image.ConvertToBitmap()
+            self.track_slices_ctrl.SetBitmap(gray_bitmap)
+            self.track_slices_ctrl.Refresh()
 
         if self.context.occultation_plot is not None:
             height, width = self.context.occultation_plot.shape[:2]

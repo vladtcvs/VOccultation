@@ -47,10 +47,6 @@ class DetectTracksPanel(wx.Panel, IObserver):
         auto_detect_references.Bind(wx.EVT_BUTTON, self.AutoDetectTracks)
         ctl_sizer.Add(auto_detect_references, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
-        specify_occultation = wx.Button(ctl_panel, label="Specify occultation")
-        specify_occultation.Bind(wx.EVT_BUTTON, self.SpecifyOccultationTrack)
-        ctl_sizer.Add(specify_occultation, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
-
         navigator = NavigationPanel(ctl_panel)
         navigator.add_observer(self)
         ctl_sizer.Add(navigator, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, border=10)
@@ -88,10 +84,6 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.init_occultation_track_position()
         x, y = self.occultation_track_position()
         self.context.build_occultation_track(x, y)
-
-    def SpecifyOccultationTrack(self, event):
-        #self.context.specify_occ_track()
-        pass
 
     def UpdateImage(self):
         if self.context.gray is None:

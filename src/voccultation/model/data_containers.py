@@ -120,6 +120,10 @@ class DriftSlice:
     def __init__(self, slices : np.ndarray):
         self.slices = slices
 
+    def draw(self) -> np.ndarray:
+        rgb = cv2.cvtColor(self.slices.transpose().astype(np.uint8), cv2.COLOR_GRAY2RGB)
+        return rgb
+
     def plot_slice(self, w : int, h : int, layer : int) -> np.ndarray:
         xr = range(self.slices.shape[0])
         values = self.slices[layer]

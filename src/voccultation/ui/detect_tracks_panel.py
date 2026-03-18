@@ -63,24 +63,31 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.context.occultation_track_pos = (y,x)
 
     def navigate(self, dx, dy):
-        x = self.context.occultation_track_pos[1] + dx
-        y = self.context.occultation_track_pos[0] + dy
-        self.context.build_occultation_track(x, y)
+        x, y = self.occultation_track_position()
+        x, y = (x + dx, y + dy)
         self.context.occultation_track_pos = (y, x)
+        self.context.build_occultation_track(x, y)
 
-    def AutoDetectTracks(self, event):
-        self.context.detect_tracks()
-        self.context.build_mean_reference_track()
-
+    def init_occultation_track_position(self):
         w = self.context.gray.shape[1]
         h = self.context.gray.shape[0]
         rw = self.context.mean_reference_track.gray.shape[1]
         rh = self.context.mean_reference_track.gray.shape[0]
         y = int(h/2-rh/2)
         x = int(w/2-rw/2)
-        self.context.build_occultation_track(x, y)
         self.context.occultation_track_pos = (y, x)
 
+    def occultation_track_position(self):
+        x = self.context.occultation_track_pos[1]
+        y = self.context.occultation_track_pos[0]
+        return x, y
+
+    def AutoDetectTracks(self, event):
+        self.context.detect_tracks()
+        self.context.build_mean_reference_track()
+        self.init_occultation_track_position()
+        x, y = self.occultation_track_position()
+        self.context.build_occultation_track(x, y)
 
     def SpecifyOccultationTrack(self, event):
         #self.context.specify_occ_track()

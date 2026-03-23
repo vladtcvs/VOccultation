@@ -73,6 +73,8 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.context.display_tracks()
 
     def init_occultation_track_position(self):
+        if self.context.gray is None:
+            return
         w = self.context.gray.shape[1]
         h = self.context.gray.shape[0]
         rw = self.context.mean_reference_track.gray.shape[1]

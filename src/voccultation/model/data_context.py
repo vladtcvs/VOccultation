@@ -113,6 +113,10 @@ class DriftContext:
         self.notify_observers()
 
     def display_tracks(self):
+        if self.gray is None:
+            self.rgb = None
+            return
+
         self.rgb = cv2.cvtColor(self.gray.astype(np.uint8), cv2.COLOR_GRAY2RGB)
         # draw reference track line on each of reference tracks on original image
         for reference_track_rect in self.reference_track_rects:
@@ -197,12 +201,15 @@ class DriftContext:
         self.display_tracks()
 
     def detect_tracks(self):
-        self.reference_track_rects = drift_detect.detect_reference_tracks(self.gray, 9, [2, 1.2])
         self.mean_reference_track = None
         self.mean_reference_profile = None
         self.mean_reference_image = None
         self.mean_reference_plot = None
         self.mean_reference_slices = None
+        if self.gray is None:
+            self.reference_track_rects = []
+        else:
+            self.reference_track_rects = drift_detect.detect_reference_tracks(self.gray, 9, [2, 1.2])
 
         # draw track bounding rectangles
         self._draw_tracks()
@@ -259,6 +266,10 @@ class DriftContext:
 
     def specify_occultation_track(self, x0 : int, y0 : int):
         if self.mean_reference_track is None:
+            self.occultation_track_rect = None
+            self.occultation_track = None
+            self.occultation_slices = None
+            self.occultation_profile = None
             return
         self.occultation_track_pos = (y0, x0)
         w = self.mean_reference_track.gray.shape[1]

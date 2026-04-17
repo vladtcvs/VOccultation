@@ -25,8 +25,10 @@ def generate_kernel(sigma: float, size: int) -> np.ndarray:
         np.ndarray: Generated Gaussian kernel.
     """
     x = np.linspace(-size//2, size//2 - 1, size)
-    grid = np.outer(np.ones(size), x)
-    kernel = np.exp(-((grid / sigma)**2) / 2.0)
+    print("X", x)
+    print("SIGMA", sigma)
+    kernel = np.exp(-((x / sigma)**2) / 2.0)
+    print("KERNEL ", kernel)
     return kernel
 
 
@@ -43,6 +45,8 @@ def wiener_deconvolution(blurred_data: np.ndarray, kernel: np.ndarray, snr: floa
     Returns:
         np.ndarray: Deconvolved data.
     """
+    print("K", kernel.shape)
+    print("SNR", snr)
     # Ensure kernel is normalized
     kernel = kernel / np.sum(kernel)
 
@@ -53,6 +57,8 @@ def wiener_deconvolution(blurred_data: np.ndarray, kernel: np.ndarray, snr: floa
     # Wiener filter: H* / (|H|^2 + 1/SNR)
     wiener_filter = np.conj(kernel_fft) / (np.abs(kernel_fft)**2 + 1/snr)
 
+    print("W = ", wiener_filter.shape)
+
     # Apply the filter to the blurred data in frequency domain
     blurred_fft = np.fft.fft(blurred_data)
     deconvolved_fft = blurred_fft * wiener_filter
@@ -60,6 +66,7 @@ def wiener_deconvolution(blurred_data: np.ndarray, kernel: np.ndarray, snr: floa
     # Transform back to time domain
     deconvolved_data = np.fft.ifft(deconvolved_fft).real
 
+    print("AAAAA", deconvolved_data.shape)
     return deconvolved_data
 
 def estimate_snr(star_track: np.ndarray, empty_tracks: np.ndarray) -> float:

@@ -136,9 +136,10 @@ def calculate_true_drift_profile(drift_profile : DriftProfile,
     # deconvolution
     if params["deconvolution"]:
         psf_sigma = params["psf"]["sigma"]
-        psf_snr = params["psf"]["snr"]
-        kernel = generate_kernel(psf_sigma, drift_profile.length)
-        drift_profile.profile = wiener_deconvolution(drift_profile.profile, kernel, psf_snr)
+        if psf_sigma > 0:
+            psf_snr = params["psf"]["snr"]
+            kernel = generate_kernel(psf_sigma, drift_profile.length)
+            drift_profile.profile = wiener_deconvolution(drift_profile.profile, kernel, psf_snr)
 
     # remove sky profile
     if params["remove_sky"]:

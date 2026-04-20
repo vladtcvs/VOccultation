@@ -116,6 +116,7 @@ def compensate_reference_profile(drift_profile : DriftProfile,
 def calculate_drift_profile(drift_slices : DriftSlice,
                             side_slices : List[DriftSlice],
                             reference_profile : DriftProfile,
+                            used_half_w : int,
                             params : dict) -> Tuple[DriftProfile, dict]:
     """
     Calculates the true drift profile.
@@ -124,6 +125,7 @@ def calculate_drift_profile(drift_slices : DriftSlice,
         drift_profile (DriftProfile): Profile to calculate
         side_profiles (List[DriftProfile]): Side profiles
         reference_profile (DriftProfile): Reference profile
+        used_half_w (int): use only specified half_w for profile
         params (dict): Parameters
 
     Returns:
@@ -159,7 +161,7 @@ def calculate_drift_profile(drift_slices : DriftSlice,
     #mean = np.mean(drift_profile.profile)
 
     slices = DriftSlice(drift_slice_slices)
-    drift_profile = voccultation.methods.drift_slice.slices_to_profile(slices)
+    drift_profile = voccultation.methods.drift_slice.slices_to_profile(slices, used_half_w)
 
     mean = 0
     delta = 0

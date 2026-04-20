@@ -365,7 +365,7 @@ class DriftContext:
                                              self.mean_reference_track.margin,
                                              0)
 
-            self.reference_profiles.append(drift_slice.slices_to_profile(slices))
+            self.reference_profiles.append(drift_slice.slices_to_profile(slices, None))
 
         # find mean reference profile
         self.mean_reference_profile = drift_profile.calculate_reference_profile(self.reference_profiles)
@@ -445,6 +445,7 @@ class DriftContext:
         self.occultation_profile, stats = drift_profile.calculate_drift_profile(self.occultation_slices_processed,
                                                                                 self.occultation_side_slices,
                                                                                 self.mean_reference_profile,
+                                                                                self.occultation_half_w_profile,
                                                                                 params)
         for key in stats:
             print(f"{key} : {stats[key]}")

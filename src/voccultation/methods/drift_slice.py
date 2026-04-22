@@ -165,7 +165,7 @@ def slice_track(track_image : np.ndarray,
         slices[i,:] = track_slice
     return DriftSlice(slices)
 
-def slices_to_profile(slices : DriftSlice) -> DriftProfile:
+def slices_to_profile(slices : DriftSlice, used_half_w : int | None) -> DriftProfile:
     """
     Converts a slice to a profile.
 
@@ -175,8 +175,16 @@ def slices_to_profile(slices : DriftSlice) -> DriftProfile:
     Returns:
         DriftProfile: Profile of the track
     """
-    weight = np.sum(slices.mask, axis=1) / slices.width
-    value = np.sum(slices.slices, axis=1)
+    mask = slices.mask
+    slice = slices.slices
+    if used_half_w is not None:
+        w = 2*used_half_w+1
+        pad = (slices.width - w)//2
+        mask = mask[:,pad:pad+w]
+        slice = slice[:,pad:pad+w]
+
+    weight = np.sum(mask, axis=1) / slices.width
+    value = np.sum(slice, axis=1)
     profile = value / weight
     profile[np.where(np.isnan(profile))] = 0
     return DriftProfile(profile, None)

@@ -17,7 +17,6 @@ import numpy as np
 import math
 
 from voccultation.data_structures.data_containers import DriftProfile
-from voccultation.methods.profile_deconvolution import wiener_deconvolution
 
 def smooth_track_profile(profile : DriftProfile, smooth : int) -> np.ndarray:
     """
@@ -109,43 +108,3 @@ def compensate_reference_profile(drift_profile : DriftProfile,
         DriftProfile: Compensated profile
     """
     return drift_profile
-
-
-def calculate_true_drift_profile(drift_profile : DriftProfile,
-                                 side_profiles : List[DriftProfile],
-                                 reference_profile : DriftProfile,
-                                 params : dict) -> Tuple[DriftProfile, dict]:
-    """
-    Calculates the true drift profile.
-
-    Parameters:
-        drift_profile (DriftProfile): Profile to calculate
-        side_profiles (List[DriftProfile]): Side profiles
-        reference_profile (DriftProfile): Reference profile
-        params (dict): Parameters
-
-    Returns:
-        Tuple[DriftProfile, dict]: True drift profile and statistics
-    """
-    L = drift_profile.length
-    for side_profile in side_profiles:
-        assert side_profile.length==L
-
-    # average sky profile parallel to occ profile
-    sky_profile = calculate_sky_profile(side_profiles)
-
-    # remove sky profile
-    if params["remove_sky"]:
-        drift_profile.profile = drift_profile.profile - sky_profile.profile
-
-    # estimate errors
-    smoothed = smooth_track_profile(drift_profile, 3)
-    delta = np.sqrt(np.sum((smoothed - drift_profile.profile)**2)/L)
-    mean = np.mean(drift_profile.profile)
-    stats = {
-        "mean" : mean,
-        "stdev" : delta,
-        "sky_stdev" : np.mean(sky_profile.error),
-    }
-    true_profile = DriftProfile(drift_profile.profile, np.sqrt(sky_profile.error**2))
-    return true_profile, stats

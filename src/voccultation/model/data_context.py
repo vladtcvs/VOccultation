@@ -196,7 +196,7 @@ class DriftContext:
                     reference_track = DriftTrack(reference_track_area,
                                                  margin=0,
                                                  path=self.mean_reference_track.path)
-                    reference_track.draw_in_place(self.rgb, reference_track_rect.left, reference_track_rect.top, (255,0,0), 0.5)
+                    reference_track.draw_in_place(self.rgb, reference_track_rect.left, reference_track_rect.top, (255,0,0), (0,200,0), 0.5)
 
                 # draw bounding rectangle
                 cv2.rectangle(self.rgb, (reference_track_rect.left, reference_track_rect.top),
@@ -211,7 +211,7 @@ class DriftContext:
                                                margin=0,
                                                path=self.mean_reference_track.path)
 
-                occultation_track.draw_in_place(self.rgb, self.occultation_track_rect.left, self.occultation_track_rect.top, (0,200,0), 0.5)
+                occultation_track.draw_in_place(self.rgb, self.occultation_track_rect.left, self.occultation_track_rect.top, (0,200,0), (0,200,0), 0.5)
 
             # draw bounding rectangles
             cv2.rectangle(self.rgb, (self.occultation_track_rect.left,
@@ -230,7 +230,7 @@ class DriftContext:
     def _draw_tracks(self):
         # mean track draw
         if self.mean_reference_track is not None:
-            self.mean_reference_image = self.mean_reference_track.draw((255,0,0), 0.5)
+            self.mean_reference_image = self.mean_reference_track.draw((255,0,0), (0,200,0), 0.5)
         else:
             self.mean_reference_image = None
 
@@ -248,7 +248,7 @@ class DriftContext:
 
         # occultation track draw
         if self.occultation_track is not None:
-            self.occultation_image = self.occultation_track.draw((0,200,0),0.5)
+            self.occultation_image = self.occultation_track.draw((0,200,0), (0,200,0), 0.5)
         else:
             self.occultation_image = None
 

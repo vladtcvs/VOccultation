@@ -207,16 +207,17 @@ class DriftSlice:
         self.mask = 1-np.isnan(self.slices)
         self.slices[np.where(np.isnan(self.slices))] = 0
 
-    def draw(self, used_width : int) -> np.ndarray:
+    def draw(self, used_width : int) -> Tuple[np.ndarray, np.ndarray]:
         rgb = cv2.cvtColor(self.slices.transpose().astype(np.uint8), cv2.COLOR_GRAY2RGB)
+        marks = np.zeros_like(rgb)
         if used_width is not None:
             center = int(self.width/2)
             l = self.slices.shape[0]
-            cv2.line(rgb, (0,center+used_width), (5,center+used_width), (0,255,0))
-            cv2.line(rgb, (0,center-used_width), (5,center-used_width), (0,255,0))
-            cv2.line(rgb, (l-1,center+used_width), (l-6,center+used_width), (0,255,0))
-            cv2.line(rgb, (l-1,center-used_width), (l-6,center-used_width), (0,255,0))
-        return rgb
+            cv2.line(marks, (0,center+used_width), (5,center+used_width), (0,255,0))
+            cv2.line(marks, (0,center-used_width), (5,center-used_width), (0,255,0))
+            cv2.line(marks, (l-1,center+used_width), (l-6,center+used_width), (0,255,0))
+            cv2.line(marks, (l-1,center-used_width), (l-6,center-used_width), (0,255,0))
+        return rgb, marks
 
     def plot_slice(self, w : int, h : int, layer : int) -> np.ndarray:
         xr = range(self.width)

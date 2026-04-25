@@ -13,6 +13,8 @@
 #
 
 import csv
+import imageio
+import numpy as np
 import wx
 
 from voccultation.model.data_context import DriftContext, IObserver
@@ -36,19 +38,9 @@ class OccultationTrackPanel(wx.Panel, IObserver):
         self.track_image_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(track_img))
         track_sizer.Add(self.track_image_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
-        label = wx.StaticText(track_box, label="Raw track")
-        track_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
-
-        linear_track_img = wx.Image(480, 40)
-        self.track_slices_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(linear_track_img))
+        # track slices
+        self.track_slices_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(wx.Image(480, 40)))
         track_sizer.Add(self.track_slices_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
-
-        label = wx.StaticText(track_box, label="Processed track")
-        track_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
-
-        processed_track_img = wx.Image(480, 40)
-        self.processed_track_slices_ctrl = wx.StaticBitmap(track_box, wx.ID_ANY, wx.Bitmap(processed_track_img))
-        track_sizer.Add(self.processed_track_slices_ctrl, proportion=1, flag=wx.EXPAND | wx.ALL, border=4)
 
         # track plot panel
         plot_box = wx.StaticBox(self, wx.ID_ANY, label='Plot')
@@ -90,9 +82,13 @@ class OccultationTrackPanel(wx.Panel, IObserver):
         build_mean_reference.Bind(wx.EVT_BUTTON, self.AnalyzeOccultation)
         ctl_sizer.Add(build_mean_reference, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
-        save_occultation = wx.Button(ctl_panel, label="Save occultation profile")
-        save_occultation.Bind(wx.EVT_BUTTON, self.SaveOccultation)
-        ctl_sizer.Add(save_occultation, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+        save_occultation_profile = wx.Button(ctl_panel, label="Save occultation profile")
+        save_occultation_profile.Bind(wx.EVT_BUTTON, self.SaveOccultationProfile)
+        ctl_sizer.Add(save_occultation_profile, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+
+        save_occultation_slices = wx.Button(ctl_panel, label="Save occultation slices")
+        save_occultation_slices.Bind(wx.EVT_BUTTON, self.SaveOccultationSlices)
+        ctl_sizer.Add(save_occultation_slices, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         navigator = NavigationPanel(ctl_panel)
         navigator.add_observer(self)
@@ -139,23 +135,21 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             self.track_image_ctrl.SetBitmap(gray_bitmap)
             self.track_image_ctrl.Refresh()
 
-        if self.context.occultation_slices_raw_image is not None:
-            height, width = self.context.occultation_slices_raw_image.shape[:2]
-            data = self.context.occultation_slices_raw_image.tobytes()
+        if self.context.occultation_slices_image is not None:
+            height, width = self.context.occultation_slices_image.shape[:2]
+            
+            occimg = self.context.occultation_slices_image.copy()
+            occmarks = self.context.occultation_slices_marks
+
+            idxs = np.where(np.sum(occmarks, axis=2) != 0)
+            occimg[idxs] = occmarks[idxs]
+            data = occimg.tobytes()
+
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
             self.track_slices_ctrl.SetBitmap(gray_bitmap)
             self.track_slices_ctrl.Refresh()
-
-        if self.context.occultation_slices_processed_image is not None:
-            height, width = self.context.occultation_slices_processed_image.shape[:2]
-            data = self.context.occultation_slices_processed_image.tobytes()
-            image = wx.Image(width, height)
-            image.SetData(data)
-            gray_bitmap = image.ConvertToBitmap()
-            self.processed_track_slices_ctrl.SetBitmap(gray_bitmap)
-            self.processed_track_slices_ctrl.Refresh()
 
         if self.context.occultation_plot is not None:
             height, width = self.context.occultation_plot.shape[:2]
@@ -169,7 +163,7 @@ class OccultationTrackPanel(wx.Panel, IObserver):
         self.Layout()
         self.Refresh()
 
-    def SaveOccultation(self, event):
+    def SaveOccultationProfile(self, event):
         with wx.FileDialog(self, "Save occultation profile", wildcard="CSV (*.csv)|*.csv",style=wx.FD_SAVE) as fileDialog:
 
             if fileDialog.ShowModal() == wx.ID_CANCEL:
@@ -187,6 +181,19 @@ class OccultationTrackPanel(wx.Panel, IObserver):
                 errors = self.context.occultation_profile.error
                 for index, value, error in zip(ids, values, errors):
                     writer.writerow([index, value, error])
+
+    def SaveOccultationSlices(self, event):
+        with wx.FileDialog(self, "Save occultation slices", wildcard="PNG (*.png)|*.png",style=wx.FD_SAVE) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            pathname = str(fileDialog.GetPath())
+            if not pathname.endswith(".png"):
+                pathname = pathname + ".png"
+
+            image = self.context.occultation_slices_image
+            imageio.imwrite(pathname, image)
 
     def notify(self):
         self.UpdateImage()

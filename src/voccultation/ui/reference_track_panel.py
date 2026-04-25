@@ -13,6 +13,8 @@
 #
 
 import csv
+import imageio
+import numpy as np
 import wx
 
 from voccultation.model.data_context import DriftContext, IObserver
@@ -78,6 +80,10 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         save_mean_reference.Bind(wx.EVT_BUTTON, self.SaveReference)
         ctl_sizer.Add(save_mean_reference, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
+        save_reference_slices = wx.Button(ctl_panel, label="Save reference slices")
+        save_reference_slices.Bind(wx.EVT_BUTTON, self.SaveReferenceSlices)
+        ctl_sizer.Add(save_reference_slices, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+
         main_sizer.Add(ctl_panel, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=8)
 
     def SetRefHalfW_Cut(self, event):
@@ -129,7 +135,11 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
 
         if self.context.mean_reference_slices_image is not None:
             height, width = self.context.mean_reference_slices_image.shape[:2]
-            data = self.context.mean_reference_slices_image.tobytes()
+            refimg = self.context.mean_reference_slices_image.copy()
+            refmarks = self.context.mean_reference_slices_marks
+            idxs = np.where(np.sum(refmarks, axis=2) != 0)
+            refimg[idxs] = refmarks[idxs]
+            data = refimg.tobytes()
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
@@ -147,6 +157,20 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
 
         self.Layout()
         self.Refresh()
+
+    def SaveReferenceSlices(self, event):
+        with wx.FileDialog(self, "Save reference slices", wildcard="PNG (*.png)|*.png",style=wx.FD_SAVE) as fileDialog:
+
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            pathname = str(fileDialog.GetPath())
+            if not pathname.endswith(".png"):
+                pathname = pathname + ".png"
+
+            image = self.context.mean_reference_slices_image
+            imageio.imwrite(pathname, image)
+
 
     def notify(self):
         self.UpdateImage()

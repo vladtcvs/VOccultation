@@ -77,8 +77,7 @@ class DriftContext:
         self.mean_reference_slices : DriftSlice = None
 
         # ---------- occultation slices ----------------
-        self.occultation_slices_processed : DriftSlice = None
-        self.occultation_slices_raw : DriftSlice = None
+        self.occultation_slices : DriftSlice = None
         self.occultation_side_slices : List[DriftSlice] = []
 
         # ---------- profiles --------------------------
@@ -94,8 +93,9 @@ class DriftContext:
         # ----------- slice images ---------------------
 
         self.mean_reference_slices_image : np.ndarray = None
-        self.occultation_slices_raw_image : np.ndarray = None
-        self.occultation_slices_processed_image : np.ndarray = None
+        self.mean_reference_slices_marks : np.ndarray = None
+        self.occultation_slices_image : np.ndarray = None
+        self.occultation_slices_marks : np.ndarray = None
 
         # ---------- plots -----------------------------
 
@@ -236,9 +236,11 @@ class DriftContext:
 
         # mean track slices
         if self.mean_reference_slices is not None:
-            self.mean_reference_slices_image = self.mean_reference_slices.draw(self.reference_half_w_profile)
+            self.mean_reference_slices_image, self.mean_reference_slices_marks = \
+                    self.mean_reference_slices.draw(self.reference_half_w_profile)
         else:
             self.mean_reference_slices_image = None
+            self.mean_reference_slices_marks = None
 
         # build reference profile plot
         if self.mean_reference_profile is not None:
@@ -253,16 +255,12 @@ class DriftContext:
             self.occultation_image = None
 
         # occultation slices
-        if self.occultation_slices_raw is not None:
-            self.occultation_slices_raw_image = self.occultation_slices_raw.draw(None)
+        if self.occultation_slices is not None:
+            self.occultation_slices_image, self.occultation_slices_marks = \
+                    self.occultation_slices.draw(self.occultation_half_w_profile)
         else:
-            self.occultation_slices_raw_image = None
-
-        # processed occultation slices
-        if self.occultation_slices_processed is not None:
-            self.occultation_slices_processed_image = self.occultation_slices_processed.draw(self.occultation_half_w_profile)
-        else:
-            self.occultation_slices_processed_image = None
+            self.occultation_slices_image = None
+            self.occultation_slices_marks = None
 
         # build occultation profile plot
         if self.occultation_profile is not None:
@@ -353,7 +351,7 @@ class DriftContext:
         if self.mean_reference_track is None:
             self.occultation_track_rect = None
             self.occultation_track = None
-            self.occultation_slices_raw = None
+            self.occultation_slices = None
             self.occultation_profile = None
             return
         self.occultation_track_pos = (y0, x0)
@@ -368,8 +366,7 @@ class DriftContext:
         if self.mean_reference_track is None:
             self.occultation_track_rect = None
             self.occultation_track = None
-            self.occultation_slices_raw = None
-            self.occultation_slices_processed = None
+            self.occultation_slices = None
             self.occultation_profile = None
             return
 
@@ -383,10 +380,10 @@ class DriftContext:
                                             occ_path)
 
         # profile of track
-        self.occultation_slices_raw = drift_slice.slice_track(self.occultation_track.gray,
-                                                              self.occultation_track.path,
-                                                              self.occultation_track.margin,
-                                                              0)
+        self.occultation_slices = drift_slice.slice_track(self.occultation_track.gray,
+                                                          self.occultation_track.path,
+                                                          self.occultation_track.margin,
+                                                          0)
 
         # profiles parallel to track
         for i in (-4,-2,2,4):
@@ -396,10 +393,8 @@ class DriftContext:
                                                      i*self.occultation_half_w_profile)
             self.occultation_side_slices.append(offsetes_slice)
 
-        # Restore true profile
-        self.occultation_slices_processed = self.occultation_slices_raw
-
-        self.occultation_profile = drift_slice.slices_to_profile(self.occultation_slices_processed,
+        # build profile
+        self.occultation_profile = drift_slice.slices_to_profile(self.occultation_slices,
                                                                  self.occultation_half_w_profile)
 
         if self.remove_sky:

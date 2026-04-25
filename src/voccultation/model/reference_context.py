@@ -28,14 +28,14 @@ class MeanReferenceTrackContext:
         self.half_w_cut = 15
         self.margin : int = max(5*self.half_w_profile, self.half_w_cut)
         self.track_rects : List[DriftTrackRect] = []
-        self.reference_tracks : List[DriftTrack] = []
+        self.tracks : List[DriftTrack] = []
         self.mean_track : DriftTrack = None
-        self.mean_reference_slices : DriftSlice = None
-        self.reference_profiles : List[DriftProfile] = []
+        self.mean_slices : DriftSlice = None
+        self.profiles : List[DriftProfile] = []
         self.mean_profile : DriftProfile = None
         self.mean_image : np.ndarray = None
         self.mean_slices_image : np.ndarray = None
-        self.mean_reference_slices_marks : np.ndarray = None
+        self.mean_slices_marks : np.ndarray = None
         self.mean_plot : np.ndarray = None
 
     def set_image(self, gray : np.ndarray):
@@ -79,13 +79,13 @@ class MeanReferenceTrackContext:
                                      ref_path)
 
         # mean track slices
-        self.mean_reference_slices = drift_slice.slice_track(ref_track_area,
+        self.mean_slices = drift_slice.slice_track(ref_track_area,
                                                              self.mean_track.path,
                                                              self.mean_track.margin,
                                                              0)
 
         # analyze each reference track and find it's profile
-        self.reference_profiles.clear()
+        self.profiles.clear()
         for reference_track_rect in self.track_rects:
             track_area, _ = reference_track_rect.extract_track(self.gray,
                                                                self.mean_track.margin)
@@ -96,10 +96,10 @@ class MeanReferenceTrackContext:
                                              self.mean_track.margin,
                                              0)
 
-            self.reference_profiles.append(drift_slice.slices_to_profile(slices, self.half_w_profile))
+            self.profiles.append(drift_slice.slices_to_profile(slices, self.half_w_profile))
 
         # find mean reference profile
-        self.mean_profile = drift_profile.calculate_reference_profile(self.reference_profiles)
+        self.mean_profile = drift_profile.calculate_reference_profile(self.profiles)
 
     def draw_tracks(self):
         if self.mean_track is not None:
@@ -108,13 +108,13 @@ class MeanReferenceTrackContext:
             self.mean_image = None
 
         # mean track slices
-        if self.mean_reference_slices is not None:
-            ref = self.mean_reference_slices.draw(self.half_w_profile)
+        if self.mean_slices is not None:
+            ref = self.mean_slices.draw(self.half_w_profile)
             self.mean_slices_image = ref[0]
-            self.mean_reference_slices_marks = ref[1]
+            self.mean_slices_marks = ref[1]
         else:
             self.mean_slices_image = None
-            self.mean_reference_slices_marks = None
+            self.mean_slices_marks = None
 
         # build reference profile plot
         if self.mean_profile is not None:

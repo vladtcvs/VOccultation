@@ -37,8 +37,8 @@ class OccultationTrackContext:
         self.track_rect : DriftTrackRect = None
         self.track : DriftTrack = None
         self.sky_tracks : List[DriftTrack] = []
-        self.occultation_slices : DriftSlice = None
-        self.occultation_side_slices : List[DriftSlice] = []
+        self.slices : DriftSlice = None
+        self.side_slices : List[DriftSlice] = []
         self.profile : DriftProfile = None
         self.image : np.ndarray = None
         self.slices_image : np.ndarray = None
@@ -89,7 +89,7 @@ class OccultationTrackContext:
                                 occ_path)
 
         # profile of track
-        self.occultation_slices = drift_slice.slice_track(self.track.gray,
+        self.slices = drift_slice.slice_track(self.track.gray,
                                                           self.track.path,
                                                           self.track.margin,
                                                           0)
@@ -100,15 +100,15 @@ class OccultationTrackContext:
                                                      self.track.path,
                                                      self.track.margin,
                                                      i*self.half_w_profile)
-            self.occultation_side_slices.append(offsetes_slice)
+            self.side_slices.append(offsetes_slice)
 
         # build profile
-        self.profile = drift_slice.slices_to_profile(self.occultation_slices,
+        self.profile = drift_slice.slices_to_profile(self.slices,
                                                                  self.half_w_profile)
 
         if remove_sky:
             occultation_side_profiles = []
-            for slice in self.occultation_side_slices:
+            for slice in self.side_slices:
                 profile = drift_slice.slices_to_profile(slice, self.half_w_profile)
                 occultation_side_profiles.append(profile)
 
@@ -124,8 +124,8 @@ class OccultationTrackContext:
             self.image = None
 
         # occultation slices
-        if self.occultation_slices is not None:
-            ref = self.occultation_slices.draw(self.half_w_profile)
+        if self.slices is not None:
+            ref = self.slices.draw(self.half_w_profile)
             self.slices_image = ref[0]
             self.slices_marks = ref[1]
         else:

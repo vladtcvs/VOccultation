@@ -136,7 +136,7 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         if self.context.reference_ctx.mean_slices_image is not None:
             height, width = self.context.reference_ctx.mean_slices_image.shape[:2]
             refimg = self.context.reference_ctx.mean_slices_image.copy()
-            refmarks = self.context.reference_ctx.mean_reference_slices_marks
+            refmarks = self.context.reference_ctx.mean_slices_marks
             idxs = np.where(np.sum(refmarks, axis=2) != 0)
             refimg[idxs] = refmarks[idxs]
             data = refimg.tobytes()

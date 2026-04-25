@@ -136,7 +136,7 @@ class TestDriftSlice:
     def test_draw(self):
         slices = np.random.rand(10, 20).astype(np.float32) * 255
         ds = DriftSlice(slices)
-        rgb = ds.draw(5)
+        rgb, _ = ds.draw(5)
         assert rgb.shape == (20, 10, 3)  # Transposed
 
     def test_plot_slice(self):

@@ -274,11 +274,30 @@ class DriftContext:
         """
         Detect tracks in the drift context.
         """
-        self.mean_reference_track = None
-        self.mean_reference_profile = None
+        self.reference_profiles = []
+        self.reference_track_rects = []
+        self.reference_tracks = []
         self.mean_reference_image = None
-        self.mean_reference_plot = None
+        self.mean_reference_track = None
         self.mean_reference_slices = None
+        self.mean_reference_slices_image = None
+        self.mean_reference_slices_marks = None
+        self.mean_reference_profile = None
+        self.mean_reference_plot = None
+
+        self.occultation_track_pos = None
+        self.occultation_track_rect = None
+        self.occultation_image = None
+        self.occultation_track = None
+        self.occultation_slices = None
+        self.occultation_slices_image = None
+        self.occultation_slices_marks = None
+        self.occultation_profile = None
+        self.occultation_plot = None
+
+        self.occultation_side_slices = []
+        self.sky_tracks = []
+
         if self.gray is None:
             self.reference_track_rects = []
         else:

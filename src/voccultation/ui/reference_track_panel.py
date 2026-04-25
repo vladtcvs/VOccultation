@@ -60,7 +60,7 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         ctl_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.half_w_cut_input = wx.SpinCtrl(ctl_panel, min=2, max=100)
-        self.half_w_cut_input.SetValue(str(self.context.reference_half_w_cut))
+        self.half_w_cut_input.SetValue(str(self.context.reference_ctx.half_w_cut))
         self.half_w_cut_input.Bind(wx.EVT_SPINCTRL, self.SetRefHalfW_Cut)
         ctl_sizer.Add(self.half_w_cut_input, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
@@ -68,7 +68,7 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         ctl_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.half_w_profile_input = wx.SpinCtrl(ctl_panel, min=1, max=100)
-        self.half_w_profile_input.SetValue(str(self.context.reference_half_w_profile))
+        self.half_w_profile_input.SetValue(str(self.context.reference_ctx.half_w_profile))
         self.half_w_profile_input.Bind(wx.EVT_SPINCTRL, self.SetRefHalfW_Profile)
         ctl_sizer.Add(self.half_w_profile_input, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
@@ -114,9 +114,9 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
             with open(pathname, "w", encoding='utf8') as f:
                 writer = csv.writer(f)
                 writer.writerow(['id', 'value', 'error'])
-                ids = range(self.context.mean_reference_profile.profile.shape[0])
-                values = self.context.mean_reference_profile.profile
-                errors = self.context.mean_reference_profile.error
+                ids = range(self.context.reference_ctx.mean_profile.profile.shape[0])
+                values = self.context.reference_ctx.mean_profile.profile
+                errors = self.context.reference_ctx.mean_profile.error
                 for index, value, error in zip(ids, values, errors):
                     writer.writerow([index, value, error])
 
@@ -124,19 +124,19 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
         self.context.build_mean_reference_track()
 
     def UpdateImage(self):
-        if self.context.mean_reference_image is not None:
-            height, width = self.context.mean_reference_image.shape[:2]
-            data = self.context.mean_reference_image.tobytes()
+        if self.context.reference_ctx.mean_image is not None:
+            height, width = self.context.reference_ctx.mean_image.shape[:2]
+            data = self.context.reference_ctx.mean_image.tobytes()
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
             self.ref_track_ctrl.SetBitmap(gray_bitmap)
             self.ref_track_ctrl.Refresh()
 
-        if self.context.mean_reference_slices_image is not None:
-            height, width = self.context.mean_reference_slices_image.shape[:2]
-            refimg = self.context.mean_reference_slices_image.copy()
-            refmarks = self.context.mean_reference_slices_marks
+        if self.context.reference_ctx.mean_slices_image is not None:
+            height, width = self.context.reference_ctx.mean_slices_image.shape[:2]
+            refimg = self.context.reference_ctx.mean_slices_image.copy()
+            refmarks = self.context.reference_ctx.mean_reference_slices_marks
             idxs = np.where(np.sum(refmarks, axis=2) != 0)
             refimg[idxs] = refmarks[idxs]
             data = refimg.tobytes()
@@ -146,9 +146,9 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
             self.ref_track_slices_ctrl.SetBitmap(gray_bitmap)
             self.ref_track_ctrl.Refresh()
 
-        if self.context.mean_reference_plot is not None:
-            height, width = self.context.mean_reference_plot.shape[:2]
-            data = self.context.mean_reference_plot.tobytes()
+        if self.context.reference_ctx.mean_plot is not None:
+            height, width = self.context.reference_ctx.mean_plot.shape[:2]
+            data = self.context.reference_ctx.mean_plot.tobytes()
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
@@ -168,11 +168,10 @@ class ReferenceTrackPanel(wx.Panel, IObserver):
             if not pathname.endswith(".png"):
                 pathname = pathname + ".png"
 
-            image = self.context.mean_reference_slices_image
+            image = self.context.reference_ctx.mean_slices_image
             imageio.imwrite(pathname, image)
-
 
     def notify(self):
         self.UpdateImage()
-        self.half_w_cut_input.SetValue(self.context.reference_half_w_cut)
-        self.half_w_profile_input.SetValue(self.context.reference_half_w_profile)
+        self.half_w_cut_input.SetValue(self.context.reference_ctx.half_w_cut)
+        self.half_w_profile_input.SetValue(self.context.reference_ctx.half_w_profile)

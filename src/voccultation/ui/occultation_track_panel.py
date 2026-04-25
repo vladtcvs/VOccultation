@@ -66,7 +66,7 @@ class OccultationTrackPanel(wx.Panel, IObserver):
         ctl_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.half_w_cut_input = wx.SpinCtrl(ctl_panel, min=1, max=100)
-        self.half_w_cut_input.SetValue(str(self.context.occultation_half_w_cut))
+        self.half_w_cut_input.SetValue(str(self.context.occultation_ctx.half_w_cut))
         self.half_w_cut_input.Bind(wx.EVT_SPINCTRL, self.SetOccHalfW_Cut)
         ctl_sizer.Add(self.half_w_cut_input, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
@@ -74,7 +74,7 @@ class OccultationTrackPanel(wx.Panel, IObserver):
         ctl_sizer.Add(label, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.half_w_profile_input = wx.SpinCtrl(ctl_panel, min=1, max=100)
-        self.half_w_profile_input.SetValue(str(self.context.occultation_half_w_profile))
+        self.half_w_profile_input.SetValue(str(self.context.occultation_ctx.half_w_profile))
         self.half_w_profile_input.Bind(wx.EVT_SPINCTRL, self.SetOccHalfW_Profile)
         ctl_sizer.Add(self.half_w_profile_input, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
@@ -116,30 +116,29 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             pass
 
     def navigate(self, dx, dy):
-        x = self.context.occultation_track_pos[1] + dx
-        y = self.context.occultation_track_pos[0] + dy
+        x = self.context.occultation_ctx.track_pos[1] + dx
+        y = self.context.occultation_ctx.track_pos[0] + dy
         self.context.specify_occultation_track(x, y)
         self.context.build_occultation_track()
-        self.context.occultation_track_pos = (y, x)
 
     def AnalyzeOccultation(self, event):
         self.context.build_occultation_track()
 
     def UpdateImage(self):
-        if self.context.occultation_image is not None:
-            height, width = self.context.occultation_image.shape[:2]
-            data = self.context.occultation_image.tobytes()
+        if self.context.occultation_ctx.image is not None:
+            height, width = self.context.occultation_ctx.image.shape[:2]
+            data = self.context.occultation_ctx.image.tobytes()
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
             self.track_image_ctrl.SetBitmap(gray_bitmap)
             self.track_image_ctrl.Refresh()
 
-        if self.context.occultation_slices_image is not None:
-            height, width = self.context.occultation_slices_image.shape[:2]
+        if self.context.occultation_ctx.slices_image is not None:
+            height, width = self.context.occultation_ctx.slices_image.shape[:2]
             
-            occimg = self.context.occultation_slices_image.copy()
-            occmarks = self.context.occultation_slices_marks
+            occimg = self.context.occultation_ctx.slices_image.copy()
+            occmarks = self.context.occultation_ctx.slices_marks
 
             idxs = np.where(np.sum(occmarks, axis=2) != 0)
             occimg[idxs] = occmarks[idxs]
@@ -151,9 +150,9 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             self.track_slices_ctrl.SetBitmap(gray_bitmap)
             self.track_slices_ctrl.Refresh()
 
-        if self.context.occultation_plot is not None:
-            height, width = self.context.occultation_plot.shape[:2]
-            data = self.context.occultation_plot.tobytes()
+        if self.context.occultation_ctx.plot is not None:
+            height, width = self.context.occultation_ctx.plot.shape[:2]
+            data = self.context.occultation_ctx.plot.tobytes()
             image = wx.Image(width, height)
             image.SetData(data)
             gray_bitmap = image.ConvertToBitmap()
@@ -176,9 +175,9 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             with open(pathname, "w", encoding='utf8') as f:
                 writer = csv.writer(f)
                 writer.writerow(['id', 'value', 'error'])
-                ids = range(self.context.occultation_profile.profile.shape[0])
-                values = self.context.occultation_profile.profile
-                errors = self.context.occultation_profile.error
+                ids = range(self.context.occultation_ctx.profile.profile.shape[0])
+                values = self.context.occultation_ctx.profile.profile
+                errors = self.context.occultation_ctx.profile.error
                 for index, value, error in zip(ids, values, errors):
                     writer.writerow([index, value, error])
 
@@ -192,10 +191,10 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             if not pathname.endswith(".png"):
                 pathname = pathname + ".png"
 
-            image = self.context.occultation_slices_image
+            image = self.context.occultation_ctx.slices_image
             imageio.imwrite(pathname, image)
 
     def notify(self):
         self.UpdateImage()
-        self.half_w_cut_input.SetValue(self.context.occultation_half_w_cut)
-        self.half_w_profile_input.SetValue(self.context.occultation_half_w_profile)
+        self.half_w_cut_input.SetValue(self.context.occultation_ctx.half_w_cut)
+        self.half_w_profile_input.SetValue(self.context.occultation_ctx.half_w_profile)

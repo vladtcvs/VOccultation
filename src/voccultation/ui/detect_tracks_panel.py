@@ -77,15 +77,15 @@ class DetectTracksPanel(wx.Panel, IObserver):
             return
         w = self.context.gray.shape[1]
         h = self.context.gray.shape[0]
-        rw = self.context.mean_reference_track.gray.shape[1]
-        rh = self.context.mean_reference_track.gray.shape[0]
+        rw = self.context.reference_ctx.mean_track.gray.shape[1]
+        rh = self.context.reference_ctx.mean_track.gray.shape[0]
         y = int(h/2-rh/2)
         x = int(w/2-rw/2)
         self.context.occultation_track_pos = (y, x)
 
     def occultation_track_position(self):
-        x = self.context.occultation_track_pos[1]
-        y = self.context.occultation_track_pos[0]
+        x = self.context.occultation_ctx.track_pos[1]
+        y = self.context.occultation_ctx.track_pos[0]
         return x, y
 
     def AutoDetectTracks(self, event):

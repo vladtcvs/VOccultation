@@ -43,10 +43,14 @@ class DriftWindow(wx.Frame):
 
         self.SetMenuBar(menuBar)
 
+        statusbar = wx.StatusBar(self)
+        self.SetStatusBar(statusbar)
+        self.status = wx.StaticText(statusbar, label="x:N/A y:N/A")
+
         panel = wx.Panel(self)
         self.notebook = wx.Notebook(panel)
 
-        self.detectTracksPanel = DetectTracksPanel(self.notebook, self.context)
+        self.detectTracksPanel = DetectTracksPanel(self.notebook, self.context, self.status)
         self.notebook.AddPage(self.detectTracksPanel, "Detect tracks")
 
         self.referenceTrackPanel = ReferenceTrackPanel(self.notebook, self.context)
@@ -60,12 +64,15 @@ class DriftWindow(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.notebook, 1, wx.ALL|wx.EXPAND, 5)
         panel.SetSizer(sizer)
+
         self.Layout()
 
     def NotebookChanged(self, event):
         page = self.notebook.GetSelection()
         if page == 2:
             self.occultationTrackPanel.AnalyzeOccultation(None)
+        if page != 0:
+            self.status.SetLabel("x:N/A y:N/A")
 
     def OnAbout(self, event):
         aboutInfo = wx.adv.AboutDialogInfo()

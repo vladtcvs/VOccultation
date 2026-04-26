@@ -19,8 +19,9 @@ from voccultation.model.data_context import DriftContext, IObserver
 from voccultation.ui.navigation_panel import NavigationPanel
 
 class DetectTracksPanel(wx.Panel, IObserver):
-    def __init__(self, parent, context : DriftContext):
+    def __init__(self, parent, context : DriftContext, status : wx.StaticText):
         wx.Panel.__init__(self, parent)
+        self.status = status
         self.context = context
         self.context.add_observer(self)
 
@@ -41,10 +42,11 @@ class DetectTracksPanel(wx.Panel, IObserver):
         image_box_sizer.Add(image_panel, proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
 
         empty_img = wx.Image(600, 600)
-        self.image_ctrl = wx.StaticBitmap(image_panel, wx.ID_ANY, wx.Bitmap(empty_img))
+        self.image_ctrl = wx.StaticBitmap(image_panel, wx.ID_ANY , wx.Bitmap(empty_img))
         self.image_ctrl.Bind(wx.EVT_LEFT_DOWN, self.on_bitmap_click)
+        self.image_ctrl.Bind(wx.EVT_MOTION, self.on_mouse_move)
 
-        image_panel_sizer.Add(self.image_ctrl, proportion=1, flag=wx.ALIGN_CENTRE | wx.ALL, border=0)
+        image_panel_sizer.Add(self.image_ctrl, proportion=0, flag=wx.ALL | wx.EXPAND, border=0)
 
         # Controls
         ctl_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -61,10 +63,37 @@ class DetectTracksPanel(wx.Panel, IObserver):
 
         main_sizer.Add(ctl_panel, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=8)
 
-    def on_bitmap_click(self, event):
+    def _get_img_crds(self, event):
         x, y = event.GetPosition()
-        self.context.specify_occultation_track(x, y)
-        self.context.display_tracks()
+        ctl_w, ctl_h = self.image_ctrl.GetSize()
+        if self.context.gray is not None:
+            image_w = self.context.gray.shape[1]
+            image_h = self.context.gray.shape[0]
+            pad_x = max(0, (ctl_w-image_w)//2)
+            pad_y = max(0, (ctl_h-image_h)//2)
+            scroll_x, scroll_y = self.image_ctrl.GetPosition()
+            x = x - scroll_x - pad_x
+            y = y - scroll_y - pad_y
+            if x < 0 or y < 0 or x >= image_w or y >= image_h:
+                x = None
+                y = None
+        else:
+            x = None
+            y = None
+        return x, y
+
+    def on_mouse_move(self, event):
+        x, y = self._get_img_crds(event)
+        if x is None or y is None:
+            self.status.SetLabel("x:N/A y:N/A")
+        else:
+            self.status.SetLabel(f"x:{x} y:{y}")
+
+    def on_bitmap_click(self, event):
+        x, y = self._get_img_crds(event)
+        if x is not None and y is not None:
+            self.context.specify_occultation_track(x, y)
+            self.context.display_tracks()
 
     def navigate(self, dx, dy):
         x, y = self.occultation_track_position()

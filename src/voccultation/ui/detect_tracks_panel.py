@@ -24,6 +24,8 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.status = status
         self.context = context
         self.context.add_observer(self)
+        self.active_reference_track : int = None
+        self.active_occultation_track : bool = True
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(main_sizer)
@@ -61,7 +63,15 @@ class DetectTracksPanel(wx.Panel, IObserver):
         navigator.add_observer(self)
         ctl_sizer.Add(navigator, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, border=10)
 
+        # Tracks
+        occ_track_select = wx.Button(ctl_panel, label="Occultation track")
+        occ_track_select.Bind(wx.EVT_BUTTON, self.selectOccultation)
+        ctl_sizer.Add(occ_track_select, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+
         main_sizer.Add(ctl_panel, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=8)
+
+    def selectOccultation(self, event):
+        self.active_occultation_track = True
 
     def _get_img_crds(self, event):
         x, y = event.GetPosition()

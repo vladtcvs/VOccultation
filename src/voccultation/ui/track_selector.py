@@ -24,6 +24,7 @@ RemoveTrackPressedEvent, EVT_REMOVE_TRACK_PRESSED = wx.lib.newevent.NewEvent()
 class TrackSelector(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent)
+        self.active_guid : str = None
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.occultation_button = wx.Button(self, label="Occultation track")
         self.sizer.Add(self.occultation_button, proportion=0, flag=wx.ALL, border=8)
@@ -31,13 +32,60 @@ class TrackSelector(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.on_occultation_pressed, self.occultation_button)
         self.SetSizer(self.sizer)
 
+        self.active_bmp = wx.Bitmap(16, 16)
+        dc = wx.MemoryDC()
+        dc.SelectObject(self.active_bmp)
+        dc.SetBackground(wx.Brush(wx.WHITE))
+        dc.Clear()
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        dc.SetBrush(wx.Brush(wx.Colour(0, 200, 0)))
+        dc.DrawCircle(8, 8, 7)
+        dc.SelectObject(wx.NullBitmap)
+        mask = wx.Mask(self.active_bmp, wx.WHITE)
+        self.active_bmp.SetMask(mask)
+
+        self.non_active_bmp = wx.Bitmap(16, 16)
+        dc.SelectObject(self.non_active_bmp)
+        dc.SetBackground(wx.Brush(wx.WHITE))
+        dc.Clear()
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        dc.SetBrush(wx.Brush(wx.Colour(127, 127, 127)))
+        dc.DrawCircle(8, 8, 7)
+        dc.SelectObject(wx.NullBitmap)
+        mask = wx.Mask(self.non_active_bmp, wx.WHITE)
+        self.non_active_bmp.SetMask(mask)
+
+        self.occultation_button.SetBitmapLabel(self.active_bmp)
+        self.active_guid = None
+
     def on_occultation_pressed(self, event):
+        self.active_guid = None
+        self.select_occultation_track()
         wx.PostEvent(self, OccultationPressedEvent())
+
+    def select_guid_reference_track(self, guid):
+        if guid in self.reference_tracks:
+            for iter_guid in self.reference_tracks.keys():
+                btn_ref, _, _ = self.reference_tracks[iter_guid]
+                btn_ref : wx.Button = btn_ref
+                if guid == iter_guid:
+                    btn_ref.SetBitmapLabel(self.active_bmp)
+                else:
+                    btn_ref.SetBitmapLabel(self.non_active_bmp)
+            self.occultation_button.SetBitmapLabel(self.non_active_bmp)
+
+    def select_occultation_track(self):
+        for iter_guid in self.reference_tracks.keys():
+            btn_ref, _, _ = self.reference_tracks[iter_guid]
+            btn_ref : wx.Button = btn_ref
+            btn_ref.SetBitmapLabel(self.non_active_bmp)
+        self.occultation_button.SetBitmapLabel(self.active_bmp)
 
     def add_new_reference_track(self):
         guid = str(uuid.uuid4())
         h_sizer = wx.BoxSizer(wx.HORIZONTAL)
         btn_ref = wx.Button(self, label="Reference track")
+        btn_ref.SetBitmapLabel(self.non_active_bmp)
         btn_remove = wx.Button(self, label="X")
         h_sizer.Add(btn_ref, proportion=0, flag=wx.ALL, border=8)
         h_sizer.Add(btn_remove, proportion=0, flag=wx.ALL, border=8)
@@ -50,10 +98,15 @@ class TrackSelector(wx.Panel):
 
     def on_reference_pressed(self, event, guid):
         evt = ReferencePressedEvent(guid=guid)
+        self.select_guid_reference_track(guid)
+        self.active_guid = guid
         wx.PostEvent(self, evt)
 
     def on_remove_pressed(self, event, guid):
         evt = RemoveTrackPressedEvent(guid=guid)
+        if self.active_guid == guid:
+            self.active_guid = None
+            self.select_occultation_track()
         wx.PostEvent(self, evt)
 
     def remove_reference_track(self, guid):

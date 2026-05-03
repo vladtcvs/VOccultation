@@ -17,7 +17,7 @@ import wx.lib.scrolledpanel as scrolled
 
 from voccultation.model.data_context import DriftContext, IObserver
 from voccultation.ui.navigation_panel import NavigationPanel
-from voccultation.ui.track_selector import EVT_OCCULTATION_TRACK_PRESSED, EVT_REFERENCE_TRACK_PRESSED, EVT_REMOVE_TRACK_PRESSED, TrackSelector
+from voccultation.ui.track_selector import EVT_OCCULTATION_TRACK_PRESSED, EVT_REFERENCE_TRACK_PRESSED, EVT_REMOVE_TRACK_PRESSED, EVT_TRACKS_UPDATED, TrackSelector
 
 class DetectTracksPanel(wx.Panel, IObserver):
     def __init__(self, parent, context : DriftContext, status : wx.StaticText):
@@ -69,6 +69,7 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.track_selector.Bind(EVT_REMOVE_TRACK_PRESSED, self.RemoveReference)
         self.track_selector.Bind(EVT_OCCULTATION_TRACK_PRESSED, self.SelectOccultation)
         self.track_selector.Bind(EVT_REFERENCE_TRACK_PRESSED, self.SelectReference)
+        self.track_selector.Bind(EVT_TRACKS_UPDATED, self.TracksUpdated)
         ctl_sizer.Add(self.track_selector,  0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, border=10)
 
         add_new_reference = wx.Button(ctl_panel, label="New reference")
@@ -88,6 +89,9 @@ class DetectTracksPanel(wx.Panel, IObserver):
         guid = event.guid
         self.track_selector.remove_reference_track(guid)
         self.Layout()
+
+    def TracksUpdated(self, event):
+        pass
 
     def AddNewReference(self, event):
         guid = self.track_selector.add_new_reference_track()

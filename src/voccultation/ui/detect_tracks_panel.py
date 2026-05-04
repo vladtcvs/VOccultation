@@ -91,11 +91,15 @@ class DetectTracksPanel(wx.Panel, IObserver):
 
     def RemoveReference(self, event):
         guid = event.guid
+        self.context.reference_ctx.remove_track(guid)
         self.track_selector.remove_reference_track(guid)
         self.Layout()
 
     def TracksUpdated(self, event):
-        pass
+        self.context.reference_ctx.reset_labels()
+        for guid in self.context.reference_ctx.track_rects.keys():
+            self.context.reference_ctx.add_label(guid, self.track_selector.track_labels.guid_label(guid))
+        self.context.build_mean_reference_track()
 
     def AddNewReference(self, event):
         guid = self.track_selector.add_new_reference_track()
@@ -164,12 +168,10 @@ class DetectTracksPanel(wx.Panel, IObserver):
         for guid in self.context.reference_ctx.track_rects.keys():
             self.track_selector.add_new_reference_track(guid)
 
-        labels = {}
         for guid in self.context.reference_ctx.track_rects.keys():
-            labels[guid] = self.track_selector.track_labels.guid_label(guid)
+            self.context.reference_ctx.add_label(guid, self.track_selector.track_labels.guid_label(guid))
 
         self.Layout()
-        self.context.save_labels(labels)
         self.context.build_mean_reference_track()
 
         x, y = self.occultation_track_position()

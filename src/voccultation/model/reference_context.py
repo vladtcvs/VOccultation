@@ -28,7 +28,7 @@ class MeanReferenceTrackContext:
         self.half_w_cut = 15
         self.margin : int = max(5*self.half_w_profile, self.half_w_cut)
         self.track_rects : dict[str, DriftTrackRect] = {}
-        self.tracks : dict[str, DriftTrack] = {}
+        self.labels : dict[str, str] = {}
         self.mean_track : DriftTrack = None
         self.mean_slices : DriftSlice = None
         self.profiles : dict[str, DriftProfile] = {}
@@ -41,6 +41,18 @@ class MeanReferenceTrackContext:
     def set_image(self, gray : np.ndarray):
         self.gray = gray
         self.reset()
+
+    def remove_track(self, guid : str):
+        del self.track_rects[guid]
+        del self.profiles[guid]
+        if guid in self.labels:
+            del self.labels[guid]
+
+    def reset_labels(self):
+        self.labels.clear()
+
+    def add_label(self, guid : str, label : str):
+        self.labels[guid] = label
 
     def autodetect_tracks(self):
         self.reset()

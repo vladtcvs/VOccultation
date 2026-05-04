@@ -26,14 +26,11 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.status = status
         self.context = context
         self.context.add_observer(self)
-        self.active_reference_track : int = None
+        self.active_reference_track : str = None
         self.active_occultation_track : bool = True
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(main_sizer)
-
-        self.guids : List[str] = []
-        self.indexes : Dict[str, int] = {}
 
         # Image panel
         image_box = wx.StaticBox(self, wx.ID_ANY, label='Image')
@@ -86,7 +83,7 @@ class DetectTracksPanel(wx.Panel, IObserver):
     def SelectReference(self, event):
         guid = event.guid
         self.active_occultation_track = False
-        self.active_reference_track = self.indexes[guid]
+        self.active_reference_track = guid
 
     def SelectOccultation(self, event):
         self.active_occultation_track = True
@@ -152,29 +149,24 @@ class DetectTracksPanel(wx.Panel, IObserver):
         y = self.context.occultation_ctx.track_pos[0]
         return x, y
 
-    def reference_track_position(self, idx : int):
-        x = self.context.reference_ctx.track_rects[idx].left
-        y = self.context.reference_ctx.track_rects[idx].top
+    def reference_track_position(self, guid : str):
+        x = self.context.reference_ctx.track_rects[guid].left
+        y = self.context.reference_ctx.track_rects[guid].top
         return x, y
 
-    def specify_reference_track(self, idx : int, x : int, y : int):
-        self.context.reference_ctx.track_rects[idx].specify_position(x, y)
-
+    def specify_reference_track(self, guid : str, x : int, y : int):
+        self.context.reference_ctx.track_rects[guid].specify_position(x, y)
 
     def AutoDetectTracks(self, event):
         self.track_selector.clear()
         self.context.detect_tracks()
-        self.guids.clear()
-        for idx, track in enumerate(self.context.reference_ctx.track_rects):
-            guid = self.track_selector.add_new_reference_track()
-            self.guids.append(guid)
 
-        labels = []
-        for idx, track in enumerate(self.context.reference_ctx.track_rects):
-            guid = self.guids[idx]
-            self.indexes[guid] = idx
-            label = self.track_selector.track_labels.guid_label(guid)
-            labels.append(label)
+        for guid in self.context.reference_ctx.track_rects.keys():
+            self.track_selector.add_new_reference_track(guid)
+
+        labels = {}
+        for guid in self.context.reference_ctx.track_rects.keys():
+            labels[guid] = self.track_selector.track_labels.guid_label(guid)
 
         self.Layout()
         self.context.save_labels(labels)

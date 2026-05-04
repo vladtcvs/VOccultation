@@ -111,8 +111,9 @@ class TrackSelector(wx.Panel):
             btn_ref.SetBitmapLabel(self.non_active_bmp)
         self.occultation_button.SetBitmapLabel(self.active_bmp)
 
-    def add_new_reference_track(self):
-        guid = str(uuid.uuid4())
+    def add_new_reference_track(self, guid = None):
+        if guid is None:
+            guid = str(uuid.uuid4())
         h_sizer = wx.BoxSizer(wx.HORIZONTAL)
         new_label = self.track_labels.add_new_guid(guid)
         btn_ref = wx.Button(self, label=f"Reference track {new_label}")

@@ -29,7 +29,10 @@ class OccultationTrackContext:
         self.reset()
 
     def reset(self):
-        self.track_pos = (0, 0)
+        if self.gray is None:
+            self.track_pos = (0, 0)
+        else:
+            self.track_pos = (self.gray.shape[1]//2, self.gray.shape[0]//2)
         self.half_w_profile : int = 5
         self.half_w_cut : int = 15
         self.margin : int = max(5*self.half_w_profile, self.half_w_cut)
@@ -45,6 +48,9 @@ class OccultationTrackContext:
         self.slices_marks : np.ndarray = None
         self.plot : np.ndarray = None
 
+    def update_rect_size(self, width, height):
+        self.track_rect.specify_size(width, height)
+
     def set_half_w_cut(self, half_w : int):
         self.half_w_cut = half_w
         if 2*self.half_w_profile > self.half_w_cut:
@@ -57,6 +63,11 @@ class OccultationTrackContext:
             self.half_w_cut = 2*self.half_w_profile
         self.margin = max(5*self.half_w_profile, self.half_w_cut)
 
+    def track_position(self):
+        x = self.track_pos[1]
+        y = self.track_pos[0]
+        return x, y
+
     def specify_track_pos(self, x0 : int, y0 : int):
         """
         Specify occultation track position in the drift context.
@@ -66,10 +77,8 @@ class OccultationTrackContext:
             y0 (int): Y-coordinate of the position.
         """
         self.track_pos = (y0, x0)
-        if self.reference_track is not None:
-            w = self.reference_track.w
-            h = self.reference_track.h
-            self.track_rect = DriftTrackRect(x0, x0 + w, y0, y0 + h)
+        if self.track_rect is not None:
+            self.track_rect.specify_position(x0, y0)
 
     def specify_reference_track(self, reference_track : DriftTrack):
         (y0, x0) = self.track_pos

@@ -49,6 +49,15 @@ class DriftContext:
         self.rect_width = 50
         self.rect_height = 50
 
+    def update_rect_size(self, width : int, height : int):
+        self.rect_width = width
+        self.rect_height = height
+        self.reference_ctx.update_rect_size(width, height)
+        self.occultation_ctx.update_rect_size(width, height)
+        self.build_mean_reference_track()
+        self.display_tracks()
+        self.notify_observers()
+
     def add_observer(self, observer : IObserver):
         """
         Add an observer to the drift context.
@@ -74,12 +83,8 @@ class DriftContext:
         """
         self.gray = gray
 
-        w = gray.shape[1]
-        h = gray.shape[0]
-
         self.reference_ctx.set_image(gray)
         self.occultation_ctx.set_image(gray)
-        self.occultation_ctx.specify_track_pos(w//2, h//2)
         self.rgb = cv2.cvtColor(self.gray.astype(np.uint8), cv2.COLOR_GRAY2RGB)
         self.notify_observers()
 
@@ -198,7 +203,7 @@ class DriftContext:
         self.occultation_ctx.draw_track()
         self.display_tracks()
 
-    def detect_tracks(self):
+    def autodetect_tracks(self):
         """
         Detect tracks in the drift context.
         """
@@ -213,20 +218,12 @@ class DriftContext:
         Build mean reference track in the drift context.
         """
         self.reference_ctx.build_mean_reference_track()
+        self.rect_width = self.reference_ctx.mean_track.w
+        self.rect_height = self.reference_ctx.mean_track.h
         self.occultation_ctx.specify_reference_track(self.reference_ctx.mean_track)
         # draw tracks
         self.draw_tracks()
         self.notify_observers()
-
-    def specify_occultation_track(self, x0 : int, y0 : int):
-        """
-        Specify occultation track position in the drift context.
-
-        Parameters:
-            x0 (int): X-coordinate of the position.
-            y0 (int): Y-coordinate of the position.
-        """
-        self.occultation_ctx.specify_track_pos(x0, y0)
 
     def build_occultation_track(self):
         """

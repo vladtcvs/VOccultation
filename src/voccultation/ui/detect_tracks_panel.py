@@ -17,7 +17,7 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from voccultation.model.data_context import DriftContext, IObserver
-from voccultation.ui.navigation_panel import NavigationPanel
+from voccultation.ui.navigation_panel import EVT_NAVIGATION, NavigationPanel
 from voccultation.ui.track_selector import EVT_OCCULTATION_TRACK_PRESSED, EVT_REFERENCE_TRACK_PRESSED, EVT_REMOVE_TRACK_PRESSED, EVT_TRACKS_UPDATED, TrackSelector
 
 class DetectTracksPanel(wx.Panel, IObserver):
@@ -61,7 +61,7 @@ class DetectTracksPanel(wx.Panel, IObserver):
         ctl_sizer.Add(auto_detect_references, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
         navigator = NavigationPanel(ctl_panel)
-        navigator.add_observer(self)
+        navigator.Bind(EVT_NAVIGATION, self.OnNavigate)
         ctl_sizer.Add(navigator, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, border=10)
 
         # Tracks
@@ -100,11 +100,14 @@ class DetectTracksPanel(wx.Panel, IObserver):
 
     def TrackDimensions(self, event):
         try:
-            self.context.rect_width = self.track_width_input.GetValue()
-            self.context.rect_height = self.track_height_input.GetValue()
-
+            self.context.update_rect_size(int(self.track_width_input.GetValue()),
+                                          int(self.track_height_input.GetValue()))
         except Exception as e:
             pass
+
+    def update_dimensions(self):
+        self.track_width_input.SetValue(str(self.context.rect_width))
+        self.track_height_input.SetValue(str(self.context.rect_height))
 
     def SelectReference(self, event):
         self.active_reference_track = event.guid
@@ -162,51 +165,41 @@ class DetectTracksPanel(wx.Panel, IObserver):
             return
 
         if self.active_reference_track is None:
-            self.context.specify_occultation_track(x, y)
+            self.context.occultation_ctx.specify_track_pos(x, y)
         else:
-            self.specify_reference_track(self.active_reference_track, x, y)
+            self.context.reference_ctx.specify_track_pos(self.active_reference_track, x, y)
         self.context.display_tracks()
 
-    def navigate(self, dx, dy):
+    def OnNavigate(self, event):
+        dx = event.dx
+        dy = event.dy
         if self.active_reference_track is None:
-            x, y = self.occultation_track_position()
+            x, y = self.context.occultation_ctx.track_position()
             x, y = (x + dx, y + dy)
-            self.context.specify_occultation_track(x, y)
+            self.context.occultation_ctx.specify_track_pos(x, y)
         else:
-            x, y = self.reference_track_position(self.active_reference_track)
+            x, y = self.context.reference_ctx.track_position(self.active_reference_track)
             x, y = (x + dx, y + dy)
-            self.specify_reference_track(self.active_reference_track, x, y)
+            self.context.reference_ctx.specify_track_pos(self.active_reference_track, x, y)
         self.context.display_tracks()
-
-    def occultation_track_position(self):
-        x = self.context.occultation_ctx.track_pos[1]
-        y = self.context.occultation_ctx.track_pos[0]
-        return x, y
-
-    def reference_track_position(self, guid : str):
-        x = self.context.reference_ctx.track_rects[guid].left
-        y = self.context.reference_ctx.track_rects[guid].top
-        return x, y
-
-    def specify_reference_track(self, guid : str, x : int, y : int):
-        self.context.reference_ctx.track_rects[guid].specify_position(x, y)
 
     def AutoDetectTracks(self, event):
         self.track_selector.clear()
-        self.context.detect_tracks()
+        self.context.reference_ctx.reset()
+        self.context.occultation_ctx.reset()
+        self.context.autodetect_tracks()
 
         for guid in self.context.reference_ctx.track_rects.keys():
             self.track_selector.add_new_reference_track(guid)
 
         for guid in self.context.reference_ctx.track_rects.keys():
-            self.context.reference_ctx.add_label(guid, self.track_selector.track_labels.guid_label(guid))
+            label = self.track_selector.track_labels.guid_label(guid)
+            self.context.reference_ctx.add_label(guid, label)
 
         self.Layout()
         self.context.build_mean_reference_track()
-
-        x, y = self.occultation_track_position()
-        self.context.specify_occultation_track(x, y)
         self.context.build_occultation_track()
+        self.update_dimensions()
 
     def UpdateImage(self):
         if self.context.gray is None:
@@ -221,9 +214,6 @@ class DetectTracksPanel(wx.Panel, IObserver):
             self.Layout()
             self.Refresh()
             self.image_ctrl.Refresh()
-
-    def OnLoadImage(self):
-        self.UpdateImage()
 
     def notify(self):
         self.UpdateImage()

@@ -53,6 +53,12 @@ class DriftTrackRect:
         self.right = self.left + self.w - 1
         self.bottom = self.top + self.h - 1
 
+    def specify_size(self, w : int, h : int):
+        self.w = w
+        self.h = h
+        self.right = self.left + self.w - 1
+        self.bottom = self.top + self.h - 1
+
     def detect_overlap(self, other) -> bool:
         other_ : DriftTrackRect = other
         if self.point_inside_rect(other_.left, other_.top):

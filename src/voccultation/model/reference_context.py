@@ -38,6 +38,23 @@ class MeanReferenceTrackContext:
         self.mean_slices_marks : np.ndarray = None
         self.mean_plot : np.ndarray = None
 
+    def update_rect_size(self, width, height):
+        for rect in self.track_rects.values():
+            rect.specify_size(width, height)
+        if len(self.track_rects) > 0:
+            self.build_mean_reference_track()
+
+    def specify_track_pos(self, guid, x,  y):
+        if guid in self.track_rects:
+            self.track_rects[guid].specify_position(x, y)
+
+    def track_position(self, guid : str):
+        if guid in self.track_rects:
+            x = self.track_rects[guid].left
+            y = self.track_rects[guid].top
+            return x, y
+        return 0, 0
+
     def set_image(self, gray : np.ndarray):
         self.gray = gray
         self.reset()

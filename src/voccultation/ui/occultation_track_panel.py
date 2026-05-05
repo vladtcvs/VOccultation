@@ -172,7 +172,7 @@ class OccultationTrackPanel(wx.Panel, IObserver):
             pathname = str(fileDialog.GetPath())
             if not pathname.endswith(".csv"):
                 pathname = pathname + ".csv"
-            
+
             with open(pathname, "w", encoding='utf8') as f:
                 writer = csv.writer(f)
                 writer.writerow(['id', 'value', 'error'])

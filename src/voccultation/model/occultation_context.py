@@ -99,9 +99,9 @@ class OccultationTrackContext:
 
         # profile of track
         self.slices = drift_slice.slice_track(self.track.gray,
-                                                          self.track.path,
-                                                          self.track.margin,
-                                                          0)
+                                              self.track.path,
+                                              self.track.margin,
+                                              0)
 
         # profiles parallel to track
         for i in (-4,-2,2,4):

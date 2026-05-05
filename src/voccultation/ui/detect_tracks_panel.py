@@ -27,7 +27,6 @@ class DetectTracksPanel(wx.Panel, IObserver):
         self.context = context
         self.context.add_observer(self)
         self.active_reference_track : str = None
-        self.active_occultation_track : bool = True
 
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(main_sizer)
@@ -80,12 +79,9 @@ class DetectTracksPanel(wx.Panel, IObserver):
         main_sizer.Add(ctl_panel, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=8)
 
     def SelectReference(self, event):
-        guid = event.guid
-        self.active_occultation_track = False
-        self.active_reference_track = guid
+        self.active_reference_track = event.guid
 
     def SelectOccultation(self, event):
-        self.active_occultation_track = True
         self.active_reference_track = None
 
     def RemoveReference(self, event):
@@ -134,12 +130,17 @@ class DetectTracksPanel(wx.Panel, IObserver):
 
     def on_bitmap_click(self, event):
         x, y = self._get_img_crds(event)
-        if x is not None and y is not None:
+        if x is None or y is None:
+            return
+
+        if self.active_reference_track is None:
             self.context.specify_occultation_track(x, y)
-            self.context.display_tracks()
+        else:
+            self.specify_reference_track(self.active_reference_track, x, y)
+        self.context.display_tracks()
 
     def navigate(self, dx, dy):
-        if self.active_occultation_track:
+        if self.active_reference_track is None:
             x, y = self.occultation_track_position()
             x, y = (x + dx, y + dy)
             self.context.specify_occultation_track(x, y)

@@ -76,7 +76,35 @@ class DetectTracksPanel(wx.Panel, IObserver):
         add_new_reference.Bind(wx.EVT_BUTTON, self.AddNewReference)
         ctl_sizer.Add(add_new_reference, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
 
+        w_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        ctl_sizer.Add(w_sizer, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+
+        label = wx.StaticText(ctl_panel, label="W : ")
+        w_sizer.Add(label)
+        self.track_width_input = wx.SpinCtrl(ctl_panel, min=20, max=500)
+        self.track_width_input.SetValue(str(self.context.rect_width))
+        self.track_width_input.Bind(wx.EVT_SPINCTRL, self.TrackDimensions)
+        w_sizer.Add(self.track_width_input)
+
+        h_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        ctl_sizer.Add(h_sizer, proportion=0, flag=wx.EXPAND | wx.ALL, border=10)
+
+        label = wx.StaticText(ctl_panel, label="H : ")
+        h_sizer.Add(label)
+        self.track_height_input = wx.SpinCtrl(ctl_panel, min=20, max=500)
+        self.track_height_input.SetValue(str(self.context.rect_height))
+        self.track_height_input.Bind(wx.EVT_SPINCTRL, self.TrackDimensions)
+        h_sizer.Add(self.track_height_input)
+
         main_sizer.Add(ctl_panel, proportion=0, flag=wx.ALL | wx.ALIGN_CENTER_VERTICAL, border=8)
+
+    def TrackDimensions(self, event):
+        try:
+            self.context.rect_width = self.track_width_input.GetValue()
+            self.context.rect_height = self.track_height_input.GetValue()
+
+        except Exception as e:
+            pass
 
     def SelectReference(self, event):
         self.active_reference_track = event.guid

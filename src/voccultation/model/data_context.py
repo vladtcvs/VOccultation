@@ -46,6 +46,9 @@ class DriftContext:
         self.reference_ctx = MeanReferenceTrackContext()
         self.occultation_ctx = OccultationTrackContext()
 
+        self.rect_width = 50
+        self.rect_height = 50
+
     def add_observer(self, observer : IObserver):
         """
         Add an observer to the drift context.
